@@ -10,8 +10,24 @@ st.set_page_config(
     layout="wide"
 )
 
-# Copyright text variable
-COPYRIGHT_TEXT = "© Data: Cruise Industry News"
+# --- THEME OPTIONS ---
+PIE_THEME_OPTIONS = {
+    "Prism": px.colors.qualitative.Prism,
+    "Pastel": px.colors.qualitative.Pastel,
+    "Bold": px.colors.qualitative.Bold,
+    "Safe": px.colors.qualitative.Safe,
+    "Plotly": px.colors.qualitative.Plotly,
+    "G10": px.colors.qualitative.G10
+}
+
+BAR_THEME_OPTIONS = {
+    "Blues": "Blues",
+    "Viridis": "Viridis",
+    "Sunsetdark": "Sunsetdark",
+    "Aggrnyl": "Aggrnyl",
+    "Plasma": "Plasma",
+    "Cividis": "Cividis"
+}
 
 # Title
 st.title("🚢 Cruise Capacity Dashboard")
@@ -38,78 +54,70 @@ def load_data_from_excel(file_path_or_buffer):
         st.error(f"Error loading Excel file: {str(e)}")
         return None, None
 
-def create_pie_chart(df, custom_order=None):
-    """Pie chart that honours the exact order given by the user."""
-    # 1.  If caller gave an order, force the dataframe into that order
+def create_pie_chart(df, custom_order=None, theme_seq=px.colors.qualitative.Prism, watermark_text=""):
+    """Pie chart with clean, non-bold horizontal text and dual watermarks."""
     if custom_order:
-        df = (df.set_index("Cruise Line")             # make the names the index
-                .reindex(custom_order)                # reorder exactly like this
-                .reset_index())                       # back to normal column
+        df = (df.set_index("Cruise Line")
+                .reindex(custom_order)
+                .reset_index())
 
-    # 2.  Build the pie with Plotly Express BUT turn sorting off
     fig = px.pie(
         df,
         values="Capacity",
         names="Cruise Line",
-        title="Cruise Line Capacity Distribution",
         hole=0.4,
-        color="Cruise Line",                       # keeps colours stable
-        color_discrete_sequence=px.colors.qualitative.Pastel,
-        category_orders={"Cruise Line": df["Cruise Line"].tolist()}  # << LOCK ORDER
+        color="Cruise Line",
+        color_discrete_sequence=theme_seq,
+        category_orders={"Cruise Line": df["Cruise Line"].tolist()}
     )
 
-    # 3.  Cosmetic tweaks (unchanged from your original)
     fig.update_traces(
         textposition="auto",
         textinfo="percent+label",
-        insidetextfont=dict(size=16, color="white", family="Arial Black"),
-        hovertemplate="<b>%{label}</b><br>Capacity: %{value:,}<br>%{percent}<extra></extra>"
+        texttemplate='%{label}<br>%{percent:.1%}',
+        insidetextfont=dict(size=15, color="white", family="Arial", weight="normal"),
+        insidetextorientation="horizontal", 
+        hovertemplate="<b>%{label}</b><br>Capacity: %{value:,}<br>%{percent:.1%}<extra></extra>"
     )
+
     fig.update_layout(
         width=900,
         height=600,
+        showlegend=False, 
         title={
-        'text': "Cruise Line Capacity Distribution",
-        'y': 0.95,           # Sets the vertical position
-        'x': 0.5,            # Sets the horizontal position (0.5 is center)
-        'xanchor': 'center', # Ensures the anchor point is the middle of the text
-        'yanchor': 'top'     # Ensures the anchor point is the top of the text
-    },
+            'text': "Cruise Line Capacity Distribution",
+            'y': 0.95,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        },
         title_font_size=24,
-        title_x=0.5,
-        margin=dict(t=80, b=80, l=50, r=150),
-        uniformtext_minsize=18,
+        margin=dict(t=80, b=80, l=50, r=50), 
+        uniformtext_minsize=14,
         uniformtext_mode="hide",
-        legend=dict(
-            orientation="v",
-            yanchor="middle",
-            y=0.5,
-            xanchor="left",
-            x=1.02,
-            traceorder="normal"
-        ),
-        annotations=[dict(
-            text=COPYRIGHT_TEXT,
-            showarrow=False,
-            xref="paper", yref="paper",
-            x=1, y=-0.1,
-            xanchor="right", yanchor="bottom",
-            font=dict(size=10, color="gray")
-        ), 
-        dict(
-                text=COPYRIGHT_TEXT,
-                textangle=-30, # Tilts the text for a watermark look
+        annotations=[
+            dict(
+                text=watermark_text,
+                showarrow=False,
+                xref="paper", yref="paper",
+                x=1, y=-0.1,
+                xanchor="right", yanchor="bottom",
+                font=dict(size=10, color="gray")
+            ), 
+            dict(
+                text=watermark_text,
+                textangle=0,
                 showarrow=False,
                 xref="paper", yref="paper",
                 x=0.5, y=0.5,
                 xanchor="center", yanchor="middle",
-                font=dict(size=40, color="rgba(150, 150, 150, 0.15)"), # Very faint
-                opacity=0.5 # Additional layer of transparency
-            )]
+                font=dict(size=40, color="rgba(150, 150, 150, 0.12)"),
+            )
+        ]
     )
     return fig
 
-def create_bar_chart(df):
+def create_bar_chart(df, theme_scale='Blues', watermark_text=""):
     """Create bar chart for Caribbean cruise capacity by year"""
     fig = px.bar(
         df,
@@ -117,46 +125,45 @@ def create_bar_chart(df):
         y='Capacity',
         title='Caribbean Cruise Capacity by Year',
         color='Capacity',
-        color_continuous_scale='Blues'
+        color_continuous_scale=theme_scale
     )
     
     fig.update_layout(
         title = {
-        'text': 'Caribbean Cruise Capacity by Year',
-        'y': 0.95,           # Sets the vertical position
-        'x': 0.5,            # Sets the horizontal position (0.5 is center)
-        'xanchor': 'center', # Ensures the anchor point is the middle of the text
-        'yanchor': 'top'     # Ensures the anchor point is the top of the text
-    },
+            'text': 'Caribbean Cruise Capacity by Year',
+            'y': 0.95,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        },
         width=900,
-        height=600, # 3:2 Ratio
+        height=600,
         title_font_size=24,
-        title_x=0.5,
         xaxis_title="Year",
         yaxis_title="Capacity",
         coloraxis_showscale=False, 
         xaxis=dict(tickmode='linear', tick0=2016, dtick=1),
         yaxis=dict(tickformat=','),
-        annotations=[dict(
-            text=COPYRIGHT_TEXT,
-            showarrow=False,
-            xref="paper", yref="paper",
-            x=1, y=-0.15,
-            xanchor='right', yanchor='bottom',
-            font=dict(size=10, color="gray")
-        ), 
-         dict(
-                text=COPYRIGHT_TEXT,
-                textangle=-30, # Tilts the text for a watermark look
+        annotations=[
+            dict(
+                text=watermark_text,
+                showarrow=False,
+                xref="paper", yref="paper",
+                x=1, y=-0.15,
+                xanchor='right', yanchor='bottom',
+                font=dict(size=10, color="gray")
+            ), 
+            dict(
+                text=watermark_text,
+                textangle=0,
                 showarrow=False,
                 xref="paper", yref="paper",
                 x=0.5, y=0.5,
                 xanchor="center", yanchor="middle",
-                font=dict(size=40, color="rgba(150, 150, 150, 0.15)"), # Very faint
-                opacity=0.5 # Additional layer of transparency
-            )]
+                font=dict(size=40, color="rgba(150, 150, 150, 0.15)"),
+            )
+        ]
     )
-    
     return fig
 
 # Main app logic
@@ -167,6 +174,14 @@ if uploaded_file is not None:
         
         # Sidebar for controls
         st.sidebar.header("Chart Controls")
+        
+        # New independent copyright input
+        user_copyright = st.sidebar.text_input("Copyright Text:", value="© Data: Cruise Industry News")
+        
+        # Independent theme selectors
+        pie_theme = st.sidebar.selectbox("Pie Chart Theme:", list(PIE_THEME_OPTIONS.keys()))
+        bar_theme = st.sidebar.selectbox("Bar Chart Theme:", list(BAR_THEME_OPTIONS.keys()))
+        
         all_companies = df_cruise_lines['Cruise Line'].unique().tolist()
         
         # Allow user to determine the order
@@ -179,10 +194,10 @@ if uploaded_file is not None:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.plotly_chart(create_pie_chart(df_cruise_lines, selected_order), use_container_width=True)
+            st.plotly_chart(create_pie_chart(df_cruise_lines, selected_order, PIE_THEME_OPTIONS[pie_theme], user_copyright), use_container_width=True)
         
         with col2:
-            st.plotly_chart(create_bar_chart(df_caribbean_yearly), use_container_width=True)
+            st.plotly_chart(create_bar_chart(df_caribbean_yearly, BAR_THEME_OPTIONS[bar_theme], user_copyright), use_container_width=True)
         
         with st.expander("View Raw Data"):
             col3, col4 = st.columns(2)
@@ -202,4 +217,5 @@ else:
 
 # Footer
 st.markdown("---")
-st.caption(COPYRIGHT_TEXT)
+# Ensure caption updates with user input
+st.caption(user_copyright if 'user_copyright' in locals() else "© Data: Cruise Industry News")
