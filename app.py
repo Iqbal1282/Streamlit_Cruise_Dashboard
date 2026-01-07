@@ -51,9 +51,11 @@ def create_pie_chart(df):
     )
     
     fig.update_traces(
-        textposition='inside',
+        textposition='auto',
         textinfo='percent+label',
+        texttemplate='<b>%{label}</b><br>%{percent}',
         hovertemplate='<b>%{label}</b><br>Capacity: %{value:,}<br>Percentage: %{percent}<extra></extra>'
+        #hovertemplate='<b>%{label}</b><br>Capacity: %{value:,}<br>Percentage: %{percent}<extra></extra>'
     )
     
     fig.update_layout(
