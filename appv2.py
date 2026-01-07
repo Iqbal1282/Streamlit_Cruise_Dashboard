@@ -51,7 +51,7 @@ def create_pie_chart(df, label_col, value_col, custom_order, theme_seq, watermar
         texttemplate='%{label}<br>%{percent:.1%}', 
         insidetextfont=dict(size=15, color="white", family="Arial", weight="normal"),
         insidetextorientation="horizontal", 
-        marker=dict(line=dict(color='#FFFFFF', width=2)),
+        #marker=dict(line=dict(color='#FFFFFF', width=2)),
         hovertemplate="<b>%{label}</b><br>Capacity: %{value:,}<br>%{percent:.1%}<extra></extra>"
     )
 
