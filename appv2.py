@@ -136,12 +136,12 @@ def create_pie_chart(df, label_col, value_col, custom_order, theme_seq, watermar
         outsidetextfont=dict(size=outside_font_size, color=font_color_outside),
         
         # Pull out slices slightly for better label visibility
-        pull=[0.02 if num_slices > 8 else 0 for _ in range(num_slices)],
+        #pull=[0.02 if num_slices > 8 else 0 for _ in range(num_slices)],
         
         # APPLY DYNAMIC DOMAIN
         domain=dict(x=x_domain, y=y_domain),
         
-        marker=dict(line=dict(color='#FFFFFF', width=1.5)),
+        #marker=dict(line=dict(color='#FFFFFF', width=1.5)),
         hovertemplate="<b>%{label}</b><br>Capacity: %{value:,}<br>%{percent:.1%}<extra></extra>"
     )
 
