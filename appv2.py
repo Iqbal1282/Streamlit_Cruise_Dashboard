@@ -29,6 +29,24 @@ BAR_THEME_OPTIONS = {
     "Cividis": "Cividis"
 }
 
+# --- DASHBOARD THEME COLORS ---
+DASHBOARD_THEMES = {
+    "Light": {
+        "bg_color": "#FFFFFF",
+        "text_color": "#000000",
+        "sidebar_bg": "#f0f2f6",
+        "card_bg": "#FFFFFF",
+        "border_color": "#E0E0E0"
+    },
+    "Dark": {
+        "bg_color": "#0E1117",
+        "text_color": "#FAFAFA",
+        "sidebar_bg": "#262730",
+        "card_bg": "#1E1E1E",
+        "border_color": "#444444"
+    }
+}
+
 # 2. HELPER FUNCTIONS (Logic)
 
 def clean_capacity_column(series):
@@ -42,7 +60,11 @@ def create_pie_chart(df, label_col, value_col, custom_order, theme_seq, watermar
                     label_font_size_multiplier=1.0,
                     font_color_inside="white",
                     font_color_outside="#2c3e50",
-                    title_font_color="#1f77b4"):
+                    title_font_color="#1f77b4",
+                    width=900,
+                    height=600,
+                    paper_bgcolor="white",
+                    plot_bgcolor="white"):
     """
     Generates a Pie Chart with dynamic 'Safety Gutters' on all sides and a 
     dynamically positioned title that tracks the pie chart's movement.
@@ -149,8 +171,8 @@ def create_pie_chart(df, label_col, value_col, custom_order, theme_seq, watermar
     margin_top = max(40, num_slices * 2)
     
     fig.update_layout(
-        width=1000, 
-        height=650,
+        width=width, 
+        height=height,
         showlegend=False,
         title={
             'text': title_text,
@@ -167,6 +189,10 @@ def create_pie_chart(df, label_col, value_col, custom_order, theme_seq, watermar
         # Adjust uniform text settings for better label management
         uniformtext_minsize=8, 
         uniformtext_mode="hide",
+        
+        # Apply background colors
+        paper_bgcolor=paper_bgcolor,
+        plot_bgcolor=plot_bgcolor,
         
         # Control label positioning to prevent overlap
         annotations=[
@@ -199,7 +225,11 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
                     x_label=None,
                     y_label=None,
                     title_font_color="#1f77b4",
-                    axis_font_color="#1f77b4"):
+                    axis_font_color="#1f77b4",
+                    width=900,
+                    height=600,
+                    paper_bgcolor="white",
+                    plot_bgcolor="white"):
     """Generates the Bar Chart with custom scale and watermarks."""
     fig = px.bar(df, x=x_col, y=y_col, color=y_col, color_continuous_scale=theme_scale)
     
@@ -216,8 +246,8 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
             'yanchor': 'top',
             'font': dict(color=title_font_color)
         },
-        width=900, 
-        height=600, 
+        width=width, 
+        height=height, 
         title_font_size=24,
         xaxis_title=x_label,
         yaxis_title=y_label,
@@ -233,6 +263,9 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
             tickformat=','
         ),
         coloraxis_showscale=False, 
+        # Apply background colors
+        paper_bgcolor=paper_bgcolor,
+        plot_bgcolor=plot_bgcolor,
         annotations=[
             dict(
                 text=watermark_text, showarrow=False, xref="paper", yref="paper", 
@@ -251,6 +284,37 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
 # 3. MAIN APP INTERFACE
 st.title("🚢 Cruise Capacity Dashboard")
 st.markdown("---")
+
+# ----------  DASHBOARD THEME SELECTION ----------
+st.sidebar.markdown("### 🎨 Dashboard Theme")
+dashboard_theme = st.sidebar.selectbox(
+    "Select Theme", 
+    list(DASHBOARD_THEMES.keys()), 
+    key="dashboard_theme"
+)
+
+# Apply dashboard theme
+theme_colors = DASHBOARD_THEMES[dashboard_theme]
+
+# Apply custom CSS for theme
+st.markdown(f"""
+    <style>
+    .stApp {{
+        background-color: {theme_colors['bg_color']};
+        color: {theme_colors['text_color']};
+    }}
+    .stSidebar {{
+        background-color: {theme_colors['sidebar_bg']};
+    }}
+    .stExpander {{
+        background-color: {theme_colors['card_bg']};
+        border: 1px solid {theme_colors['border_color']};
+    }}
+    .stDataFrame {{
+        background-color: {theme_colors['card_bg']};
+    }}
+    </style>
+    """, unsafe_allow_html=True)
 
 # ----------  FILE UPLOADS  ----------
 pie_file = st.sidebar.file_uploader("📊 Upload Pie-Chart Excel", type=["xlsx", "xls"], key="pie")
@@ -283,10 +347,58 @@ if 'bar_y_label' not in st.session_state:
     st.session_state.bar_y_label = ""
 if 'bar_axis_font_color' not in st.session_state:
     st.session_state.bar_axis_font_color = "#1f77b4"
+if 'pie_aspect_ratio' not in st.session_state:
+    st.session_state.pie_aspect_ratio = "3:2"
+if 'bar_aspect_ratio' not in st.session_state:
+    st.session_state.bar_aspect_ratio = "3:2"
+if 'chart_size_multiplier' not in st.session_state:
+    st.session_state.chart_size_multiplier = 1.0
+
+# Aspect ratio options
+ASPECT_RATIO_OPTIONS = {
+    "1:1": (1, 1),
+    "4:3": (4, 3),
+    "3:2": (3, 2),
+    "16:9": (16, 9),
+    "16:10": (16, 10),
+    "Custom": None
+}
 
 if show_advanced:
+    # Chart Size Settings
+    st.sidebar.markdown("#### 📏 Chart Size Settings")
+    
+    st.session_state.chart_size_multiplier = st.sidebar.slider(
+        "Chart Size Multiplier",
+        min_value=0.5,
+        max_value=2.0,
+        value=st.session_state.chart_size_multiplier,
+        step=0.1,
+        help="Adjust overall chart size (0.5 = 50% smaller, 2.0 = 200% larger)"
+    )
+    
+    # Pie Chart Aspect Ratio
+    st.sidebar.markdown("##### Pie Chart Aspect Ratio")
+    st.session_state.pie_aspect_ratio = st.sidebar.selectbox(
+        "Pie Chart Ratio",
+        options=list(ASPECT_RATIO_OPTIONS.keys()),
+        index=list(ASPECT_RATIO_OPTIONS.keys()).index(st.session_state.pie_aspect_ratio),
+        key="pie_aspect_ratio_select",
+        help="Select aspect ratio for pie chart"
+    )
+    
+    # Bar Chart Aspect Ratio
+    st.sidebar.markdown("##### Bar Chart Aspect Ratio")
+    st.session_state.bar_aspect_ratio = st.sidebar.selectbox(
+        "Bar Chart Ratio",
+        options=list(ASPECT_RATIO_OPTIONS.keys()),
+        index=list(ASPECT_RATIO_OPTIONS.keys()).index(st.session_state.bar_aspect_ratio),
+        key="bar_aspect_ratio_select",
+        help="Select aspect ratio for bar chart"
+    )
+    
     # Pie Chart Advanced Settings
-    st.sidebar.markdown("#### Pie Chart Settings")
+    st.sidebar.markdown("#### 🥧 Pie Chart Settings")
     
     # Title text input
     st.session_state.pie_title_text = st.sidebar.text_input(
@@ -337,7 +449,7 @@ if show_advanced:
     )
     
     # Bar Chart Advanced Settings
-    st.sidebar.markdown("#### Bar Chart Settings")
+    st.sidebar.markdown("#### 📊 Bar Chart Settings")
     
     # Bar chart title text input
     st.session_state.bar_title_text = st.sidebar.text_input(
@@ -388,6 +500,9 @@ if show_advanced:
         st.session_state.bar_x_label = ""
         st.session_state.bar_y_label = ""
         st.session_state.bar_axis_font_color = "#1f77b4"
+        st.session_state.pie_aspect_ratio = "3:2"
+        st.session_state.bar_aspect_ratio = "3:2"
+        st.session_state.chart_size_multiplier = 1.0
         st.rerun()
 
 # ----------  SIDEBAR HELPERS  ----------
@@ -435,7 +550,44 @@ if bar_ready:
 
 # ----------  CHART RENDERING  ----------
 charts_drawn = 0
+
+# Calculate chart dimensions based on aspect ratio and multiplier
+def calculate_dimensions(aspect_ratio_key, multiplier=1.0):
+    """Calculate width and height based on aspect ratio and multiplier."""
+    base_width = 900
+    
+    if aspect_ratio_key in ASPECT_RATIO_OPTIONS:
+        ratio = ASPECT_RATIO_OPTIONS[aspect_ratio_key]
+        if ratio:
+            width = int(base_width * multiplier)
+            height = int(width * ratio[1] / ratio[0])
+            return width, height
+    
+    # Default to 3:2 if not found
+    width = int(base_width * multiplier)
+    height = int(width * 2 / 3)
+    return width, height
+
+# Determine chart background colors based on dashboard theme
+if dashboard_theme == "Dark":
+    paper_bgcolor = "#1E1E1E"
+    plot_bgcolor = "#2D2D2D"
+    # Adjust default font colors for dark theme
+    if st.session_state.pie_font_color_outside == "#2c3e50":
+        st.session_state.pie_font_color_outside = "#E0E0E0"
+    if st.session_state.bar_title_font_color == "#1f77b4":
+        st.session_state.bar_title_font_color = "#4FC3F7"
+else:
+    paper_bgcolor = "white"
+    plot_bgcolor = "white"
+
 if pie_ready:
+    # Calculate pie chart dimensions
+    pie_width, pie_height = calculate_dimensions(
+        st.session_state.pie_aspect_ratio, 
+        st.session_state.chart_size_multiplier
+    )
+    
     fig_pie = create_pie_chart(
         pie_df, 
         pie_label, 
@@ -448,11 +600,21 @@ if pie_ready:
         label_font_size_multiplier=st.session_state.pie_label_font_multiplier,
         font_color_inside=st.session_state.pie_font_color_inside,
         font_color_outside=st.session_state.pie_font_color_outside,
-        title_font_color=st.session_state.pie_title_font_color
+        title_font_color=st.session_state.pie_title_font_color,
+        width=pie_width,
+        height=pie_height,
+        paper_bgcolor=paper_bgcolor,
+        plot_bgcolor=plot_bgcolor
     )
     charts_drawn += 1
     
 if bar_ready:
+    # Calculate bar chart dimensions
+    bar_width, bar_height = calculate_dimensions(
+        st.session_state.bar_aspect_ratio, 
+        st.session_state.chart_size_multiplier
+    )
+    
     # Get custom labels or use empty strings (which will be handled as None in the function)
     custom_x_label = st.session_state.bar_x_label if st.session_state.bar_x_label.strip() != "" else None
     custom_y_label = st.session_state.bar_y_label if st.session_state.bar_y_label.strip() != "" else None
@@ -467,22 +629,34 @@ if bar_ready:
         x_label=custom_x_label,
         y_label=custom_y_label,
         title_font_color=st.session_state.bar_title_font_color,
-        axis_font_color=st.session_state.bar_axis_font_color
+        axis_font_color=st.session_state.bar_axis_font_color,
+        width=bar_width,
+        height=bar_height,
+        paper_bgcolor=paper_bgcolor,
+        plot_bgcolor=plot_bgcolor
     )
     charts_drawn += 1
 
 # Display current advanced settings
 if show_advanced and (pie_ready or bar_ready):
     with st.expander("📋 Current Advanced Settings"):
+        st.write(f"**Dashboard Theme:** {dashboard_theme}")
+        st.write(f"**Chart Size Multiplier:** {st.session_state.chart_size_multiplier}")
+        
         if pie_ready:
             st.write("**Pie Chart Settings:**")
+            st.write(f"- Aspect Ratio: {st.session_state.pie_aspect_ratio}")
+            st.write(f"- Dimensions: {pie_width} × {pie_height} pixels")
             st.write(f"- Title Position Adjustment: {st.session_state.pie_title_y_adjustment}")
             st.write(f"- Label Font Multiplier: {st.session_state.pie_label_font_multiplier}")
             st.write(f"- Inside Label Color: {st.session_state.pie_font_color_inside}")
             st.write(f"- Outside Label Color: {st.session_state.pie_font_color_outside}")
             st.write(f"- Title Color: {st.session_state.pie_title_font_color}")
+        
         if bar_ready:
             st.write("**Bar Chart Settings:**")
+            st.write(f"- Aspect Ratio: {st.session_state.bar_aspect_ratio}")
+            st.write(f"- Dimensions: {bar_width} × {bar_height} pixels")
             st.write(f"- Title Color: {st.session_state.bar_title_font_color}")
             st.write(f"- Axis Labels Color: {st.session_state.bar_axis_font_color}")
             st.write(f"- X-axis Label: '{st.session_state.bar_x_label or 'Using column name'}'")
