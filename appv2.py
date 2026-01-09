@@ -29,22 +29,22 @@ BAR_THEME_OPTIONS = {
     "Cividis": "Cividis"
 }
 
-# --- DASHBOARD THEME COLORS ---
-DASHBOARD_THEMES = {
-    "Light": {
-        "bg_color": "#FFFFFF",
-        "text_color": "#000000",
-        "sidebar_bg": "#f0f2f6",
-        "card_bg": "#FFFFFF",
-        "border_color": "#E0E0E0"
-    },
-    "Dark": {
-        "bg_color": "#0E1117",
-        "text_color": "#FAFAFA",
-        "sidebar_bg": "#262730",
-        "card_bg": "#1E1E1E",
-        "border_color": "#444444"
-    }
+# --- DARK THEME COLORS (Always used) ---
+THEME_COLORS = {
+    "bg_color": "#0E1117",
+    "text_color": "#FAFAFA",
+    "sidebar_bg": "#262730",
+    "sidebar_text": "#FAFAFA",
+    "sidebar_header": "#4FC3F7",
+    "sidebar_input_text": "#FAFAFA",
+    "sidebar_input_bg": "#1E1E1E",
+    "card_bg": "#1E1E1E",
+    "border_color": "#110E0E",
+    "chart_paper_bg": "#1E1E1E",
+    "chart_plot_bg": "#1F1E1E",
+    "default_font_color": "#FAFAFA",
+    "default_axis_color": "#4FC3F7",
+    "file_uploader_color": "#4FC3F7"
 }
 
 # 2. HELPER FUNCTIONS (Logic)
@@ -59,12 +59,14 @@ def create_pie_chart(df, label_col, value_col, custom_order, theme_seq, watermar
                     title_y_adjustment=0.0, 
                     label_font_size_multiplier=1.0,
                     font_color_inside="white",
-                    font_color_outside="#2c3e50",
-                    title_font_color="#1f77b4",
+                    font_color_outside="#2c3e50",  # Original color
+                    title_font_color="#1f77b4",  # Original color
                     width=900,
                     height=600,
                     paper_bgcolor="white",
-                    plot_bgcolor="white"):
+                    plot_bgcolor="white",
+                    watermark_x=1.0,
+                    watermark_y=-0.05):
     """
     Generates a Pie Chart with dynamic 'Safety Gutters' on all sides and a 
     dynamically positioned title that tracks the pie chart's movement.
@@ -198,7 +200,7 @@ def create_pie_chart(df, label_col, value_col, custom_order, theme_seq, watermar
         annotations=[
             dict(
                 text=watermark_text, showarrow=False, xref="paper", yref="paper", 
-                x=1, y=-0.05, xanchor="right", yanchor="bottom", 
+                x=watermark_x, y=watermark_y, xanchor="right", yanchor="bottom", 
                 font=dict(size=10, color="gray")
             ), 
             dict(
@@ -224,12 +226,14 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
                     title_text="Caribbean Cruise Capacity by Year",
                     x_label=None,
                     y_label=None,
-                    title_font_color="#1f77b4",
-                    axis_font_color="#1f77b4",
+                    title_font_color="#1f77b4",  # Original color
+                    axis_font_color="#1f77b4",  # Original color
                     width=900,
                     height=600,
                     paper_bgcolor="white",
-                    plot_bgcolor="white"):
+                    plot_bgcolor="white",
+                    watermark_x=1.0,
+                    watermark_y=-0.15):
     """Generates the Bar Chart with custom scale and watermarks."""
     fig = px.bar(df, x=x_col, y=y_col, color=y_col, color_continuous_scale=theme_scale)
     
@@ -260,6 +264,7 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
         yaxis=dict(
             title_font=dict(color=axis_font_color),
             tickfont=dict(color=axis_font_color),
+            gridcolor="#0C0C0C",              # ✅ DARK gridlines
             tickformat=','
         ),
         coloraxis_showscale=False, 
@@ -269,7 +274,7 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
         annotations=[
             dict(
                 text=watermark_text, showarrow=False, xref="paper", yref="paper", 
-                x=1, y=-0.15, xanchor='right', yanchor='bottom', 
+                x=watermark_x, y=watermark_y, xanchor='right', yanchor='bottom', 
                 font=dict(size=10, color="gray")
             ), 
             dict(
@@ -285,36 +290,185 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
 st.title("🚢 Cruise Capacity Dashboard")
 st.markdown("---")
 
-# ----------  DASHBOARD THEME SELECTION ----------
-st.sidebar.markdown("### 🎨 Dashboard Theme")
-dashboard_theme = st.sidebar.selectbox(
-    "Select Theme", 
-    list(DASHBOARD_THEMES.keys()), 
-    key="dashboard_theme"
-)
-
-# Apply dashboard theme
-theme_colors = DASHBOARD_THEMES[dashboard_theme]
-
-# Apply custom CSS for theme
 st.markdown(f"""
-    <style>
-    .stApp {{
-        background-color: {theme_colors['bg_color']};
-        color: {theme_colors['text_color']};
-    }}
-    .stSidebar {{
-        background-color: {theme_colors['sidebar_bg']};
-    }}
-    .stExpander {{
-        background-color: {theme_colors['card_bg']};
-        border: 1px solid {theme_colors['border_color']};
-    }}
-    .stDataFrame {{
-        background-color: {theme_colors['card_bg']};
-    }}
-    </style>
-    """, unsafe_allow_html=True)
+<style>
+
+/* =====================
+   WIDGET LABELS
+===================== */
+
+label,
+legend {{
+    color: #E6E6E6 !important;
+    font-weight: 500;
+}}
+
+/* =====================
+   FILE UPLOADER (FIXED)
+===================== */
+
+div[data-testid="stFileUploader"] * {{
+    color: #DADADA !important;
+}}
+
+/* =====================
+   MARKDOWN TEXT (SAFE)
+===================== */
+
+/* Only markdown body text — no spans */
+div[data-testid="stMarkdownContainer"] p {{
+    color: #E0E0E0;
+}}
+
+/* =====================
+   HEADERS (NO CONFLICT)
+===================== */
+
+h1 {{
+    color: {THEME_COLORS['text_color']} !important;
+}}
+
+h2 {{
+    color: #F5F5F5 !important;
+}}
+
+h3 {{
+    color: #EDEDED !important;
+}}
+
+h4, h5 {{
+    color: #E0E0E0 !important;
+}}
+
+/* =====================
+   SLIDER VALUE TEXT
+===================== */
+
+div[data-testid="stSlider"] span {{
+    color: #E6E6E6 !important;
+}}
+
+/* =========================
+   BASE APP + BODY
+========================= */
+
+.stApp {{
+    background-color: {THEME_COLORS['bg_color']} !important;
+    color: {THEME_COLORS['text_color']} !important;
+}}
+
+.block-container {{
+    background-color: {THEME_COLORS['bg_color']} !important;
+    padding-top: 3.5rem;
+    padding-bottom: 2rem;
+}}
+
+/* =========================
+   TOP HEADER
+========================= */
+
+header[data-testid="stHeader"] {{
+    background-color: {THEME_COLORS['bg_color']} !important;
+    border-bottom: 1px solid {THEME_COLORS['border_color']};
+}}
+
+/* =========================
+   SIDEBAR (COMPLETE)
+========================= */
+
+section[data-testid="stSidebar"] {{
+    background-color: {THEME_COLORS['sidebar_bg']} !important;
+    border-right: 1px solid {THEME_COLORS['border_color']};
+}}
+
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] small,
+section[data-testid="stSidebar"] legend {{
+    color: {THEME_COLORS['sidebar_text']} !important;
+}}
+
+/* Sidebar inputs */
+section[data-testid="stSidebar"] input,
+section[data-testid="stSidebar"] textarea,
+section[data-testid="stSidebar"] select {{
+    background-color: {THEME_COLORS['sidebar_input_bg']} !important;
+    color: {THEME_COLORS['sidebar_input_text']} !important;
+    border: 1px solid {THEME_COLORS['border_color']} !important;
+    border-radius: 6px;
+}}
+
+/* Sidebar buttons */
+section[data-testid="stSidebar"] button {{
+    background-color: {THEME_COLORS['sidebar_input_bg']} !important;
+    color: {THEME_COLORS['sidebar_text']} !important;
+    border: 1px solid {THEME_COLORS['border_color']} !important;
+}}
+
+/* =========================
+   SECTION SEPARATORS
+========================= */
+
+hr {{
+    border: 1px solid {THEME_COLORS['border_color']} !important;
+}}
+
+/* =========================
+   PLOTLY (VISIBILITY)
+========================= */
+
+.stPlotlyChart {{
+    background-color: {THEME_COLORS['card_bg']} !important;
+    border-radius: 10px;
+    padding: 0.5rem;
+    border: 1px solid {THEME_COLORS['border_color']};
+}}
+
+.stPlotlyChart iframe {{
+    background-color: {THEME_COLORS['card_bg']} !important;
+}}
+
+/* =========================
+   EXPANDERS
+========================= */
+
+details {{
+    background-color: {THEME_COLORS['card_bg']} !important;
+    border: 1px solid {THEME_COLORS['border_color']} !important;
+    border-radius: 8px;
+}}
+
+details summary {{
+    color: {THEME_COLORS['text_color']} !important;
+    font-weight: 600;
+}}
+
+/* =========================
+   DATAFRAME
+========================= */
+
+.stDataFrame {{
+    background-color: {THEME_COLORS['card_bg']} !important;
+    border-radius: 8px;
+    border: 1px solid {THEME_COLORS['border_color']};
+}}
+
+/* =========================
+   INFO / ALERTS
+========================= */
+
+.stAlert {{
+    background-color: {THEME_COLORS['card_bg']} !important;
+    color: {THEME_COLORS['text_color']} !important;
+    border: 1px solid {THEME_COLORS['border_color']} !important;
+}}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+
 
 # ----------  FILE UPLOADS  ----------
 pie_file = st.sidebar.file_uploader("📊 Upload Pie-Chart Excel", type=["xlsx", "xls"], key="pie")
@@ -336,23 +490,31 @@ if 'bar_title_text' not in st.session_state:
 if 'pie_font_color_inside' not in st.session_state:
     st.session_state.pie_font_color_inside = "#FFFFFF"
 if 'pie_font_color_outside' not in st.session_state:
-    st.session_state.pie_font_color_outside = "#2c3e50"
+    st.session_state.pie_font_color_outside = "#E0E0E0"  # Changed for dark theme visibility
 if 'pie_title_font_color' not in st.session_state:
-    st.session_state.pie_title_font_color = "#1f77b4"
+    st.session_state.pie_title_font_color = "#4FC3F7"  # Changed for dark theme
 if 'bar_title_font_color' not in st.session_state:
-    st.session_state.bar_title_font_color = "#1f77b4"
+    st.session_state.bar_title_font_color = "#4FC3F7"  # Changed for dark theme
 if 'bar_x_label' not in st.session_state:
     st.session_state.bar_x_label = ""
 if 'bar_y_label' not in st.session_state:
     st.session_state.bar_y_label = ""
 if 'bar_axis_font_color' not in st.session_state:
-    st.session_state.bar_axis_font_color = "#1f77b4"
+    st.session_state.bar_axis_font_color = "#4FC3F7"  # Changed for dark theme
 if 'pie_aspect_ratio' not in st.session_state:
     st.session_state.pie_aspect_ratio = "3:2"
 if 'bar_aspect_ratio' not in st.session_state:
     st.session_state.bar_aspect_ratio = "3:2"
 if 'chart_size_multiplier' not in st.session_state:
     st.session_state.chart_size_multiplier = 1.0
+if 'pie_watermark_x' not in st.session_state:
+    st.session_state.pie_watermark_x = 1.0
+if 'pie_watermark_y' not in st.session_state:
+    st.session_state.pie_watermark_y = -0.05
+if 'bar_watermark_x' not in st.session_state:
+    st.session_state.bar_watermark_x = 1.0
+if 'bar_watermark_y' not in st.session_state:
+    st.session_state.bar_watermark_y = -0.15
 
 # Aspect ratio options
 ASPECT_RATIO_OPTIONS = {
@@ -427,6 +589,28 @@ if show_advanced:
         help="Multiplier for label font sizes (0.5 = 50% smaller, 2.0 = 200% larger)"
     )
     
+    # Watermark position for pie chart
+    st.sidebar.markdown("##### Copyright Position")
+    col_wm1, col_wm2 = st.sidebar.columns(2)
+    with col_wm1:
+        st.session_state.pie_watermark_x = st.sidebar.slider(
+            "Pie Copyright X",
+            min_value=0.0,
+            max_value=1.0,
+            value=st.session_state.pie_watermark_x,
+            step=0.05,
+            help="X position of copyright (0=left, 1=right)"
+        )
+    with col_wm2:
+        st.session_state.pie_watermark_y = st.sidebar.slider(
+            "Pie Copyright Y",
+            min_value=-0.5,
+            max_value=1.0,
+            value=st.session_state.pie_watermark_y,
+            step=0.05,
+            help="Y position of copyright"
+        )
+    
     # Font color pickers for pie chart
     col1, col2 = st.sidebar.columns(2)
     with col1:
@@ -457,6 +641,28 @@ if show_advanced:
         value=st.session_state.bar_title_text,
         key="bar_title_input"
     )
+    
+    # Watermark position for bar chart
+    st.sidebar.markdown("##### Copyright Position")
+    col_wm3, col_wm4 = st.sidebar.columns(2)
+    with col_wm3:
+        st.session_state.bar_watermark_x = st.sidebar.slider(
+            "Bar Copyright X",
+            min_value=0.0,
+            max_value=1.0,
+            value=st.session_state.bar_watermark_x,
+            step=0.05,
+            help="X position of copyright (0=left, 1=right)"
+        )
+    with col_wm4:
+        st.session_state.bar_watermark_y = st.sidebar.slider(
+            "Bar Copyright Y",
+            min_value=-0.5,
+            max_value=1.0,
+            value=st.session_state.bar_watermark_y,
+            step=0.05,
+            help="Y position of copyright"
+        )
     
     # Bar chart X and Y axis labels
     st.session_state.bar_x_label = st.sidebar.text_input(
@@ -494,15 +700,19 @@ if show_advanced:
         st.session_state.pie_title_text = "Cruise Line Capacity Distribution"
         st.session_state.bar_title_text = "Caribbean Cruise Capacity by Year"
         st.session_state.pie_font_color_inside = "#FFFFFF"
-        st.session_state.pie_font_color_outside = "#2c3e50"
-        st.session_state.pie_title_font_color = "#1f77b4"
-        st.session_state.bar_title_font_color = "#1f77b4"
+        st.session_state.pie_font_color_outside = "#E0E0E0"
+        st.session_state.pie_title_font_color = "#4FC3F7"
+        st.session_state.bar_title_font_color = "#4FC3F7"
         st.session_state.bar_x_label = ""
         st.session_state.bar_y_label = ""
-        st.session_state.bar_axis_font_color = "#1f77b4"
+        st.session_state.bar_axis_font_color = "#4FC3F7"
         st.session_state.pie_aspect_ratio = "3:2"
         st.session_state.bar_aspect_ratio = "3:2"
         st.session_state.chart_size_multiplier = 1.0
+        st.session_state.pie_watermark_x = 1.0
+        st.session_state.pie_watermark_y = -0.05
+        st.session_state.bar_watermark_x = 1.0
+        st.session_state.bar_watermark_y = -0.15
         st.rerun()
 
 # ----------  SIDEBAR HELPERS  ----------
@@ -568,19 +778,6 @@ def calculate_dimensions(aspect_ratio_key, multiplier=1.0):
     height = int(width * 2 / 3)
     return width, height
 
-# Determine chart background colors based on dashboard theme
-if dashboard_theme == "Dark":
-    paper_bgcolor = "#1E1E1E"
-    plot_bgcolor = "#2D2D2D"
-    # Adjust default font colors for dark theme
-    if st.session_state.pie_font_color_outside == "#2c3e50":
-        st.session_state.pie_font_color_outside = "#E0E0E0"
-    if st.session_state.bar_title_font_color == "#1f77b4":
-        st.session_state.bar_title_font_color = "#4FC3F7"
-else:
-    paper_bgcolor = "white"
-    plot_bgcolor = "white"
-
 if pie_ready:
     # Calculate pie chart dimensions
     pie_width, pie_height = calculate_dimensions(
@@ -603,8 +800,10 @@ if pie_ready:
         title_font_color=st.session_state.pie_title_font_color,
         width=pie_width,
         height=pie_height,
-        paper_bgcolor=paper_bgcolor,
-        plot_bgcolor=plot_bgcolor
+        paper_bgcolor=THEME_COLORS['chart_paper_bg'],
+        plot_bgcolor=THEME_COLORS['chart_plot_bg'],
+        watermark_x=st.session_state.pie_watermark_x,
+        watermark_y=st.session_state.pie_watermark_y
     )
     charts_drawn += 1
     
@@ -632,15 +831,17 @@ if bar_ready:
         axis_font_color=st.session_state.bar_axis_font_color,
         width=bar_width,
         height=bar_height,
-        paper_bgcolor=paper_bgcolor,
-        plot_bgcolor=plot_bgcolor
+        paper_bgcolor=THEME_COLORS['chart_paper_bg'],
+        plot_bgcolor=THEME_COLORS['chart_plot_bg'],
+        watermark_x=st.session_state.bar_watermark_x,
+        watermark_y=st.session_state.bar_watermark_y
     )
     charts_drawn += 1
 
 # Display current advanced settings
 if show_advanced and (pie_ready or bar_ready):
     with st.expander("📋 Current Advanced Settings"):
-        st.write(f"**Dashboard Theme:** {dashboard_theme}")
+        st.write(f"**Dashboard Theme:** Dark (Always)")
         st.write(f"**Chart Size Multiplier:** {st.session_state.chart_size_multiplier}")
         
         if pie_ready:
@@ -652,6 +853,7 @@ if show_advanced and (pie_ready or bar_ready):
             st.write(f"- Inside Label Color: {st.session_state.pie_font_color_inside}")
             st.write(f"- Outside Label Color: {st.session_state.pie_font_color_outside}")
             st.write(f"- Title Color: {st.session_state.pie_title_font_color}")
+            st.write(f"- Copyright Position: X={st.session_state.pie_watermark_x}, Y={st.session_state.pie_watermark_y}")
         
         if bar_ready:
             st.write("**Bar Chart Settings:**")
@@ -661,6 +863,7 @@ if show_advanced and (pie_ready or bar_ready):
             st.write(f"- Axis Labels Color: {st.session_state.bar_axis_font_color}")
             st.write(f"- X-axis Label: '{st.session_state.bar_x_label or 'Using column name'}'")
             st.write(f"- Y-axis Label: '{st.session_state.bar_y_label or 'Using column name'}'")
+            st.write(f"- Copyright Position: X={st.session_state.bar_watermark_x}, Y={st.session_state.bar_watermark_y}")
 
 # Decide layout
 if charts_drawn == 0:
