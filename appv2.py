@@ -207,7 +207,7 @@ def create_pie_chart(df, label_col, value_col, custom_order, theme_seq, watermar
             dict(
                 text=watermark_text, showarrow=False, xref="paper", yref="paper", 
                 x=watermark_x, y=watermark_y, xanchor="right", yanchor="bottom", 
-                font=dict(size=10, color="gray")
+                font=dict(size=16, color="gray")
             ), 
             dict(
                 text=watermark_text, textangle=0, showarrow=False, xref="paper", yref="paper", 
@@ -278,7 +278,7 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
             dict(
                 text=watermark_text, showarrow=False, xref="paper", yref="paper", 
                 x=watermark_x, y=watermark_y, xanchor='right', yanchor='bottom', 
-                font=dict(size=10, color="gray")
+                font=dict(size=16, color="gray")
             ), 
             dict(
                 text=watermark_text, textangle=0, showarrow=False, xref="paper", yref="paper", 
