@@ -107,8 +107,8 @@ def create_pie_chart(df, label_col, value_col, custom_order, theme_seq, watermar
                     height=600,
                     paper_bgcolor="white",
                     plot_bgcolor="white",
-                    watermark_x=1.0,
-                    watermark_y=-0.05):
+                    watermark_x=0.5,
+                    watermark_y=-0.055):
     """
     Generates a Pie Chart with dynamic 'Safety Gutters' on all sides and a 
     dynamically positioned title that tracks the pie chart's movement.
@@ -206,7 +206,7 @@ def create_pie_chart(df, label_col, value_col, custom_order, theme_seq, watermar
         annotations=[
             dict(
                 text=watermark_text, showarrow=False, xref="paper", yref="paper", 
-                x=watermark_x, y=watermark_y, xanchor="right", yanchor="bottom", 
+                x=watermark_x, y=watermark_y, xanchor="center", yanchor="bottom", 
                 font=dict(size=16, color="gray")
             ), 
             dict(
@@ -236,7 +236,7 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
                     height=600,
                     paper_bgcolor="white",
                     plot_bgcolor="white",
-                    watermark_x=1.0,
+                    watermark_x=0.5,
                     watermark_y=-0.15,
                     gridline_color="#E8E8E8"):
     """Generates the Bar Chart with custom scale and watermarks."""
@@ -271,13 +271,14 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
             gridcolor=gridline_color,
             tickformat=','
         ),
-        coloraxis_showscale=False, 
+        coloraxis_showscale=False,
+        margin=dict(t=80, b=120, l=80, r=50),
         paper_bgcolor=paper_bgcolor,
         plot_bgcolor=plot_bgcolor,
         annotations=[
             dict(
                 text=watermark_text, showarrow=False, xref="paper", yref="paper", 
-                x=watermark_x, y=watermark_y, xanchor='right', yanchor='bottom', 
+                x=watermark_x, y=watermark_y, xanchor='center', yanchor='bottom', 
                 font=dict(size=16, color="gray")
             ), 
             dict(
@@ -721,11 +722,11 @@ if 'bar_aspect_ratio' not in st.session_state:
 if 'chart_size_multiplier' not in st.session_state:
     st.session_state.chart_size_multiplier = 1.0
 if 'pie_watermark_x' not in st.session_state:
-    st.session_state.pie_watermark_x = 1.0
+    st.session_state.pie_watermark_x = 0.5
 if 'pie_watermark_y' not in st.session_state:
-    st.session_state.pie_watermark_y = -0.05
+    st.session_state.pie_watermark_y = -0.055
 if 'bar_watermark_x' not in st.session_state:
-    st.session_state.bar_watermark_x = 1.0
+    st.session_state.bar_watermark_x = 0.5
 if 'bar_watermark_y' not in st.session_state:
     st.session_state.bar_watermark_y = -0.15
 
@@ -811,7 +812,7 @@ if show_advanced:
             min_value=0.0,
             max_value=1.0,
             value=st.session_state.pie_watermark_x,
-            step=0.05,
+            step=0.01,
             help="X position of copyright (0=left, 1=right)"
         )
     with col_wm2:
@@ -820,7 +821,7 @@ if show_advanced:
             min_value=-0.5,
             max_value=1.0,
             value=st.session_state.pie_watermark_y,
-            step=0.05,
+            step=0.01,
             help="Y position of copyright"
         )
     
@@ -864,7 +865,7 @@ if show_advanced:
             min_value=0.0,
             max_value=1.0,
             value=st.session_state.bar_watermark_x,
-            step=0.05,
+            step=0.01,
             help="X position of copyright (0=left, 1=right)"
         )
     with col_wm4:
@@ -873,7 +874,7 @@ if show_advanced:
             min_value=-0.5,
             max_value=1.0,
             value=st.session_state.bar_watermark_y,
-            step=0.05,
+            step=0.01,
             help="Y position of copyright"
         )
     
@@ -922,9 +923,9 @@ if show_advanced:
         st.session_state.pie_aspect_ratio = "3:2"
         st.session_state.bar_aspect_ratio = "3:2"
         st.session_state.chart_size_multiplier = 1.0
-        st.session_state.pie_watermark_x = 1.0
-        st.session_state.pie_watermark_y = -0.05
-        st.session_state.bar_watermark_x = 1.0
+        st.session_state.pie_watermark_x = 0.5
+        st.session_state.pie_watermark_y = -0.055
+        st.session_state.bar_watermark_x = 0.5
         st.session_state.bar_watermark_y = -0.15
         st.rerun()
 
