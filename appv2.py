@@ -237,7 +237,7 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
                     paper_bgcolor="white",
                     plot_bgcolor="white",
                     watermark_x=0.5,
-                    watermark_y=-0.15,
+                    watermark_y=0.02,
                     gridline_color="#E8E8E8"):
     """Generates the Bar Chart with custom scale and watermarks."""
     fig = px.bar(df, x=x_col, y=y_col, color=y_col, color_continuous_scale=theme_scale)
@@ -272,13 +272,13 @@ def create_bar_chart(df, x_col, y_col, theme_scale, watermark_text,
             tickformat=','
         ),
         coloraxis_showscale=False,
-        margin=dict(t=80, b=120, l=80, r=50),
+        margin=dict(t=80, b=140, l=80, r=50),
         paper_bgcolor=paper_bgcolor,
         plot_bgcolor=plot_bgcolor,
         annotations=[
             dict(
                 text=watermark_text, showarrow=False, xref="paper", yref="paper", 
-                x=watermark_x, y=watermark_y, xanchor='center', yanchor='bottom', 
+                x=watermark_x, y=watermark_y, xanchor='center', yanchor='top', 
                 font=dict(size=16, color="gray")
             ), 
             dict(
@@ -728,7 +728,7 @@ if 'pie_watermark_y' not in st.session_state:
 if 'bar_watermark_x' not in st.session_state:
     st.session_state.bar_watermark_x = 0.5
 if 'bar_watermark_y' not in st.session_state:
-    st.session_state.bar_watermark_y = -0.15
+    st.session_state.bar_watermark_y = -0.22
 
 # Aspect ratio options
 ASPECT_RATIO_OPTIONS = {
@@ -926,7 +926,7 @@ if show_advanced:
         st.session_state.pie_watermark_x = 0.5
         st.session_state.pie_watermark_y = -0.055
         st.session_state.bar_watermark_x = 0.5
-        st.session_state.bar_watermark_y = -0.15
+        st.session_state.bar_watermark_y = 0.02
         st.rerun()
 
 # ----------  SIDEBAR HELPERS  ----------
